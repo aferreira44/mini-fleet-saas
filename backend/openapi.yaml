@@ -1,0 +1,21 @@
+openapi: "3.0.0"
+info:
+  title: Greeting application
+  version: 0.0.1
+paths:
+  /greeting/{name}:
+    post:
+      operationId: operations.post_greeting
+      responses:
+        "200":
+          description: "Greeting response"
+          content:
+            text/plain:
+              schema:
+                type: string
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
