@@ -1,21 +1,63 @@
 openapi: "3.0.0"
 info:
-  title: Greeting application
+  title: Fleet Management API
   version: 0.0.1
 paths:
-  /greeting/{name}:
-    post:
-      operationId: operations.post_greeting
+  /api/vehicles:
+    get:
+      operationId: operations.get_vehicles
+      summary: Get list of vehicles
       responses:
         "200":
-          description: "Greeting response"
+          description: "List of vehicles"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vehicle"
+  /api/vehicles/{vehicle_id}/status:
+    put:
+      operationId: operations.update_vehicle_status
+      summary: Update vehicle status
       parameters:
-        - name: name
+        - name: vehicle_id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [Available, In Maintenance, Out of Service]
+      responses:
+        "200":
+          description: "Vehicle status updated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+components:
+  schemas:
+    Vehicle:
+      type: object
+      required:
+        - id
+        - name
+        - status
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [Available, In Maintenance, Out of Service]
