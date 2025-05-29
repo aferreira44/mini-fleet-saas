@@ -1,20 +1,17 @@
-import { Typography } from "@mui/material";
-import { Container } from "@mui/material";
-import { Box } from "@mui/material";
-import Navbar from "./Navbar";
+import { HashRouter as Router, Routes, Route } from "react-router";
+import Navbar from "./components/Navbar";
+import VehiclesPage from "./pages/VehiclesPage";
+import MainPage from "./pages/MainPage";
 
 function App() {
   return (
-    <>
+    <Router>
       <Navbar />
-      <Container maxWidth="md">
-        <Box sx={{ my: 4 }}>
-          <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-            Mini Fleet SaaS
-          </Typography>
-        </Box>
-      </Container>
-    </>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/vehicles" element={<VehiclesPage />} />
+      </Routes>
+    </Router>
   );
 }
 

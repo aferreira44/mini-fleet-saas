@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -55,12 +56,12 @@ export default function ButtonAppBar() {
         >
           <List>
             <ListItem>
-              <ListItemButton>
+              <ListItemButton component={Link} to="/">
                 <ListItemText>Home</ListItemText>
               </ListItemButton>
             </ListItem>
             <ListItem>
-              <ListItemButton>
+              <ListItemButton component={Link} to="/vehicles">
                 <ListItemText>Vehicles</ListItemText>
               </ListItemButton>
             </ListItem>
