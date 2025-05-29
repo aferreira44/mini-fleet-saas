@@ -1,15 +1,8 @@
-import axios, { type AxiosInstance, AxiosError } from "axios";
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export class ApiError extends Error {
-    constructor(message: string, public status?: number) {
-        super(message);
-        this.name = "ApiError";
-    }
-}
-
-const axiosInstance: AxiosInstance = axios.create({
+const axiosInstance = axios.create({
     baseURL: API_URL,
     headers: {
         "Content-Type": "application/json",
@@ -17,25 +10,25 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 export const baseApi = {
-    get: async <T>(endpoint: string): Promise<T> => {
+    get: async <T>(url: string): Promise<T> => {
         try {
-            const { data } = await axiosInstance.get<T>(endpoint);
-            return data;
+            const response = await axiosInstance.get<T>(url);
+            return response.data;
         } catch (error) {
-            if (error instanceof AxiosError) {
-                throw new ApiError(error.message, error.response?.status);
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.detail || error.message);
             }
             throw error;
         }
     },
 
-    put: async <T>(endpoint: string, data: unknown): Promise<T> => {
+    put: async <T>(url: string, data: unknown): Promise<T> => {
         try {
-            const { data: responseData } = await axiosInstance.put<T>(endpoint, data);
-            return responseData;
+            const response = await axiosInstance.put<T>(url, data);
+            return response.data;
         } catch (error) {
-            if (error instanceof AxiosError) {
-                throw new ApiError(error.message, error.response?.status);
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.detail || error.message);
             }
             throw error;
         }
@@ -46,8 +39,8 @@ export const baseApi = {
             const { data: responseData } = await axiosInstance.post<T>(endpoint, data);
             return responseData;
         } catch (error) {
-            if (error instanceof AxiosError) {
-                throw new ApiError(error.message, error.response?.status);
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.detail || error.message);
             }
             throw error;
         }
@@ -58,8 +51,8 @@ export const baseApi = {
             const { data } = await axiosInstance.delete<T>(endpoint);
             return data;
         } catch (error) {
-            if (error instanceof AxiosError) {
-                throw new ApiError(error.message, error.response?.status);
+            if (axios.isAxiosError(error)) {
+                throw new Error(error.response?.data?.detail || error.message);
             }
             throw error;
         }

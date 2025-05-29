@@ -1,10 +1,16 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
 import type { Vehicle } from "../types/Vehicle";
 import EnhancedTable, { type HeadCell } from "../components/Table";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Typography, Snackbar, Alert } from "@mui/material";
 import EditVehicleModal from "../components/EditVehicleModal";
-import { vehiclesApi } from "../api/vehicles";
+import {
+  fetchVehicles,
+  updateVehicleStatus,
+} from "../store/slices/vehiclesSlice";
+import type { RootState } from "../store";
+import { useAppDispatch } from "../hooks/useAppDispatch";
 
 const headCells: readonly HeadCell<Vehicle>[] = [
   {
@@ -28,25 +34,27 @@ const headCells: readonly HeadCell<Vehicle>[] = [
 ];
 
 export default function VehiclesPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const {
+    items: vehicles,
+    loading,
+    error,
+  } = useSelector((state: RootState) => state.vehicles);
+  const [selectedVehicle, setSelectedVehicle] = React.useState<Vehicle | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [showError, setShowError] = React.useState(false);
 
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const data = await vehiclesApi.getAll();
-        setVehicles(data);
-      } catch (error) {
-        console.error("Error fetching vehicles:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    dispatch(fetchVehicles());
+  }, [dispatch]);
 
-    fetchVehicles();
-  }, []);
+  useEffect(() => {
+    if (error) {
+      setShowError(true);
+    }
+  }, [error]);
 
   const handleEdit = (id: number) => {
     const vehicle = vehicles.find((v) => v.id === id);
@@ -57,14 +65,8 @@ export default function VehiclesPage() {
   };
 
   const handleSave = async (updatedVehicle: Vehicle) => {
-    try {
-      const savedVehicle = await vehiclesApi.updateStatus(updatedVehicle);
-      setVehicles((prev) =>
-        prev.map((v) => (v.id === savedVehicle.id ? savedVehicle : v))
-      );
-    } catch (error) {
-      console.error("Error updating vehicle:", error);
-    }
+    await dispatch(updateVehicleStatus(updatedVehicle));
+    setIsModalOpen(false);
   };
 
   return (
@@ -86,6 +88,20 @@ export default function VehiclesPage() {
           onSave={handleSave}
           vehicle={selectedVehicle}
         />
+        <Snackbar
+          open={showError}
+          autoHideDuration={6000}
+          onClose={() => setShowError(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setShowError(false)}
+            severity="error"
+            sx={{ width: "100%" }}
+          >
+            {error}
+          </Alert>
+        </Snackbar>
       </Box>
     </Container>
   );

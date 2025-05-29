@@ -1,4 +1,5 @@
 import type { Vehicle } from "../types/Vehicle";
+import { handleError } from "../utils/errorHandling";
 import { baseApi } from "./base";
 
 const ROUTES = {
@@ -8,10 +9,20 @@ const ROUTES = {
 
 export const vehiclesApi = {
     getAll: async (): Promise<Vehicle[]> => {
-        return baseApi.get<Vehicle[]>(ROUTES.getAll);
+        try {
+            return await baseApi.get<Vehicle[]>(ROUTES.getAll);
+        } catch (error) {
+            handleError(error, 'Failed to fetch vehicles');
+            return Promise.reject(error);
+        }
     },
 
     updateStatus: async (vehicle: Vehicle): Promise<Vehicle> => {
-        return baseApi.put<Vehicle>(ROUTES.updateStatus(vehicle.id), { status: vehicle.status });
+        try {
+            return await baseApi.put<Vehicle>(ROUTES.updateStatus(vehicle.id), { status: vehicle.status });
+        } catch (error) {
+            handleError(error, 'Failed to update vehicle status');
+            return Promise.reject(error);
+        }
     },
 }; 

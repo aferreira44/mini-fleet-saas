@@ -9,6 +9,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import type { Vehicle } from "../types/Vehicle";
+import { VehicleStatus } from "../types/Vehicle";
 
 interface EditVehicleModalProps {
   open: boolean;
@@ -17,7 +18,7 @@ interface EditVehicleModalProps {
   vehicle: Vehicle | null;
 }
 
-const statusOptions = ["Available", "Out of Service", "In Maintenance"];
+const statusOptions = Object.values(VehicleStatus);
 
 export default function EditVehicleModal({
   open,
@@ -72,9 +73,9 @@ export default function EditVehicleModal({
           value={formData.status}
           onChange={handleChange("status")}
         >
-          {statusOptions.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option}
+          {statusOptions.map((status) => (
+            <MenuItem key={status} value={status}>
+              {status}
             </MenuItem>
           ))}
         </TextField>
