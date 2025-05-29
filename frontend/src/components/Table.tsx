@@ -18,24 +18,15 @@ import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import EditIcon from "@mui/icons-material/Edit";
+import CircularProgress from "@mui/material/CircularProgress";
 import { visuallyHidden } from "@mui/utils";
-import type { Vehicle } from "../types/Vehicle";
 
-function createData(id: number, name: string, status: string): Vehicle {
-  return {
-    id,
-    name,
-    status,
-  };
+export interface HeadCell<T> {
+  disablePadding: boolean;
+  id: keyof T;
+  label: string;
+  numeric: boolean;
 }
-
-const rows = [
-  createData(1, "Car", "Available"),
-  createData(2, "Truck", "Available"),
-  createData(3, "Bus", "Available"),
-  createData(4, "Motorcycle", "Available"),
-  createData(5, "Bicycle", "Available"),
-];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -61,47 +52,25 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Vehicle;
-  label: string;
-  numeric: boolean;
+interface EnhancedTableProps<T> {
+  data: T[];
+  loading: boolean;
+  headCells: readonly HeadCell<T>[];
+  title: string;
+  onEdit?: (id: number) => void;
 }
 
-const headCells: readonly HeadCell[] = [
-  {
-    id: "id",
-    numeric: true,
-    disablePadding: true,
-    label: "ID",
-  },
-  {
-    id: "name",
-    numeric: false,
-    disablePadding: false,
-    label: "Name",
-  },
-  {
-    id: "status",
-    numeric: false,
-    disablePadding: false,
-    label: "Status",
-  },
-];
-
-interface EnhancedTableProps {
+interface EnhancedTableHeadProps<T> {
   numSelected: number;
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof Vehicle
-  ) => void;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof T) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
   orderBy: string;
   rowCount: number;
+  headCells: readonly HeadCell<T>[];
 }
 
-function EnhancedTableHead(props: EnhancedTableProps) {
+function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
   const {
     onSelectAllClick,
     order,
@@ -109,9 +78,10 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     numSelected,
     rowCount,
     onRequestSort,
+    headCells,
   } = props;
   const createSortHandler =
-    (property: keyof Vehicle) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof T) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
@@ -125,14 +95,14 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{
-              "aria-label": "select all vehicles",
+              "aria-label": "select all",
             }}
           />
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell
-            key={headCell.id}
-            align={"left"}
+            key={String(headCell.id)}
+            align={headCell.numeric ? "right" : "left"}
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -158,10 +128,11 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
+  title: string;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
+  const { numSelected, title } = props;
   return (
     <Toolbar
       sx={[
@@ -194,7 +165,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           id="tableTitle"
           component="div"
         >
-          Fleet
+          {title}
         </Typography>
       )}
       {numSelected > 0 ? (
@@ -214,16 +185,22 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function EnhancedTable() {
+export default function EnhancedTable<T extends { id: number }>({
+  data,
+  loading,
+  headCells,
+  title,
+  onEdit,
+}: EnhancedTableProps<T>) {
   const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof Vehicle>("id");
+  const [orderBy, setOrderBy] = React.useState<keyof T>("id" as keyof T);
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof Vehicle
+    property: keyof T
   ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -232,7 +209,7 @@ export default function EnhancedTable() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
+      const newSelected = data.map((n) => n.id);
       setSelected(newSelected);
       return;
     }
@@ -269,26 +246,42 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
-  // Avoid a layout jump when reaching the last page with empty rows.
+  const handleEdit = (id: number) => {
+    if (onEdit) {
+      onEdit(id);
+    }
+  };
+
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
   const visibleRows = React.useMemo(
     () =>
-      [...rows]
+      [...data]
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage]
+    [order, orderBy, page, rowsPerPage, data]
   );
 
-  const handleEdit = (id: number) => {
-    console.log("Edit clicked for id:", id);
-  };
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar numSelected={selected.length} title={title} />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -298,10 +291,11 @@ export default function EnhancedTable() {
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
-              orderBy={orderBy}
+              orderBy={String(orderBy)}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={data.length}
+              headCells={headCells}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -328,17 +322,15 @@ export default function EnhancedTable() {
                         }}
                       />
                     </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                      align="left"
-                    >
-                      {row.id}
-                    </TableCell>
-                    <TableCell align="left">{row.name}</TableCell>
-                    <TableCell align="left">{row.status}</TableCell>
+                    {headCells.map((headCell) => (
+                      <TableCell
+                        key={String(headCell.id)}
+                        align={headCell.numeric ? "right" : "left"}
+                        padding={headCell.disablePadding ? "none" : "normal"}
+                      >
+                        {row[headCell.id]}
+                      </TableCell>
+                    ))}
                     <TableCell align="right">
                       <IconButton
                         onClick={(e) => {
@@ -359,7 +351,7 @@ export default function EnhancedTable() {
                     height: 53 * emptyRows,
                   }}
                 >
-                  <TableCell colSpan={7} />
+                  <TableCell colSpan={headCells.length + 2} />
                 </TableRow>
               )}
             </TableBody>
@@ -368,7 +360,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={data.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
