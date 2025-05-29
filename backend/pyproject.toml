@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "connexion[swagger-ui]>=3.2.0",
+    "pydantic>=2.11.5",
     "uvicorn>=0.34.2",
 ]
 
