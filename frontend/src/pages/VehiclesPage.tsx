@@ -4,6 +4,7 @@ import type { Vehicle } from "../types/Vehicle";
 import EnhancedTable, { type HeadCell } from "../components/Table";
 import { Box, Container, Typography } from "@mui/material";
 import EditVehicleModal from "../components/EditVehicleModal";
+import { vehiclesApi } from "../api/vehicles";
 
 const headCells: readonly HeadCell<Vehicle>[] = [
   {
@@ -35,8 +36,7 @@ export default function VehiclesPage() {
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/vehicles");
-        const data = await response.json();
+        const data = await vehiclesApi.getAll();
         setVehicles(data);
       } catch (error) {
         console.error("Error fetching vehicles:", error);
@@ -58,23 +58,10 @@ export default function VehiclesPage() {
 
   const handleSave = async (updatedVehicle: Vehicle) => {
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/vehicles/${updatedVehicle.id}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: updatedVehicle.status }),
-        }
+      const savedVehicle = await vehiclesApi.updateStatus(updatedVehicle);
+      setVehicles((prev) =>
+        prev.map((v) => (v.id === savedVehicle.id ? savedVehicle : v))
       );
-
-      if (response.ok) {
-        setVehicles((prev) =>
-          prev.map((v) => (v.id === updatedVehicle.id ? updatedVehicle : v))
-        );
-        // setIsModalOpen(false);
-      }
     } catch (error) {
       console.error("Error updating vehicle:", error);
     }
