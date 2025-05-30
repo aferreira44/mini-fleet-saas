@@ -102,7 +102,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
         {headCells.map((headCell) => (
           <TableCell
             key={String(headCell.id)}
-            align={headCell.numeric ? "right" : "left"}
+            align={"left"}
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -325,7 +325,7 @@ export default function EnhancedTable<T extends { id: number }>({
                     {headCells.map((headCell) => (
                       <TableCell
                         key={String(headCell.id)}
-                        align={headCell.numeric ? "right" : "left"}
+                        align={"left"}
                         padding={headCell.disablePadding ? "none" : "normal"}
                       >
                         {row[headCell.id]}

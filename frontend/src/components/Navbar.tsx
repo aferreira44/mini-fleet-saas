@@ -29,7 +29,7 @@ export default function ButtonAppBar() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="static" color="primary">
         <Toolbar>
           <IconButton
             size="large"
