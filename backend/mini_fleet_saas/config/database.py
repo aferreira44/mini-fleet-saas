@@ -16,6 +16,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pathlib import Path
 from typing import Final
+from contextlib import contextmanager
 from ..services.vehicles.models import Base, VehicleModel, VehicleStatus
 
 # Get the project root directory (2 levels up from this file)
@@ -41,15 +42,20 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
 
-def get_db():
+@contextmanager
+def get_db_session():
     """
-    Get a database session.
-
-    This is a generator function that yields a database session and ensures
-    it is properly closed after use.
+    Context manager for database sessions.
+    Ensures proper cleanup of database connections.
 
     Yields:
         Session: A SQLAlchemy database session
+
+    Example:
+        with get_db_session() as db:
+            # use db session
+            repository = VehicleRepository(db)
+            vehicles = repository.get_all()
     """
     db = SessionLocal()
     try:
@@ -72,8 +78,7 @@ def seed_db(num_vehicles: int = 50):
         This function will not seed the database if it already contains data
         to prevent accidental data loss.
     """
-    db = SessionLocal()
-    try:
+    with get_db_session() as db:
         if db.query(VehicleModel).count() != 0:
             print("Database already contains data, skipping seed.")
         else:
@@ -90,9 +95,6 @@ def seed_db(num_vehicles: int = 50):
             db.add_all(vehicles)
             db.commit()
             print(f"Database seeded successfully with {num_vehicles} vehicles!")
-
-    finally:
-        db.close()
 
 
 def drop_db():
