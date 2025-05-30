@@ -1,16 +1,10 @@
 import * as React from "react";
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
 import type { Vehicle } from "../types/Vehicle";
 import EnhancedTable, { type HeadCell } from "../components/Table";
 import { Box, Container, Typography, Snackbar, Alert } from "@mui/material";
 import EditVehicleModal from "../components/EditVehicleModal";
-import {
-  fetchVehicles,
-  updateVehicleStatus,
-} from "../store/slices/vehiclesSlice";
-import type { RootState } from "../store";
-import { useAppDispatch } from "../hooks/useAppDispatch";
+import { useVehicles } from "../hooks/useVehicles";
+import { useModal } from "../hooks/useModal";
 
 const headCells: readonly HeadCell<Vehicle>[] = [
   {
@@ -34,23 +28,14 @@ const headCells: readonly HeadCell<Vehicle>[] = [
 ];
 
 export default function VehiclesPage() {
-  const dispatch = useAppDispatch();
-  const {
-    items: vehicles,
-    loading,
-    error,
-  } = useSelector((state: RootState) => state.vehicles);
+  const { vehicles, loading, error, updateStatus } = useVehicles();
+  const { isOpen, open, close } = useModal();
   const [selectedVehicle, setSelectedVehicle] = React.useState<Vehicle | null>(
     null
   );
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [showError, setShowError] = React.useState(false);
 
-  useEffect(() => {
-    dispatch(fetchVehicles());
-  }, [dispatch]);
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (error) {
       setShowError(true);
     }
@@ -60,13 +45,13 @@ export default function VehiclesPage() {
     const vehicle = vehicles.find((v) => v.id === id);
     if (vehicle) {
       setSelectedVehicle(vehicle);
-      setIsModalOpen(true);
+      open();
     }
   };
 
   const handleSave = async (updatedVehicle: Vehicle) => {
-    await dispatch(updateVehicleStatus(updatedVehicle));
-    setIsModalOpen(false);
+    await updateStatus(updatedVehicle);
+    close();
   };
 
   return (
@@ -83,8 +68,8 @@ export default function VehiclesPage() {
           onEdit={handleEdit}
         />
         <EditVehicleModal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          open={isOpen}
+          onClose={close}
           onSave={handleSave}
           vehicle={selectedVehicle}
         />

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -11,21 +10,10 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemButton from "@mui/material/ListItemButton";
+import { useDrawer } from "../hooks/useDrawer";
 
 export default function ButtonAppBar() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const toggleDrawer =
-    (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
-      setDrawerOpen(open);
-    };
+  const { isOpen, open, close, anchor } = useDrawer();
 
   return (
     <>
@@ -37,7 +25,7 @@ export default function ButtonAppBar() {
             color="inherit"
             aria-label="menu"
             sx={{ mr: 2 }}
-            onClick={toggleDrawer(true)}
+            onClick={open}
           >
             <MenuIcon />
           </IconButton>
@@ -46,12 +34,12 @@ export default function ButtonAppBar() {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+      <Drawer anchor={anchor} open={isOpen} onClose={close}>
         <Box
           sx={{ width: 250 }}
           role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
+          onClick={close}
+          onKeyDown={close}
         >
           <List>
             <ListItem>
