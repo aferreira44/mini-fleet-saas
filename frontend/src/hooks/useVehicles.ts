@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import type { Vehicle } from '../types/Vehicle';
 import type { RootState } from '../store';
@@ -13,9 +13,9 @@ export const useVehicles = () => {
         dispatch(fetchVehicles());
     }, [dispatch]);
 
-    const updateStatus = async (vehicle: Vehicle) => {
+    const updateStatus = useCallback(async (vehicle: Vehicle) => {
         await dispatch(updateVehicleStatus(vehicle));
-    };
+    }, [dispatch]);
 
     return {
         vehicles,

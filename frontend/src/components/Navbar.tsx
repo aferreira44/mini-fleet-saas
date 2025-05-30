@@ -11,9 +11,23 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemButton from "@mui/material/ListItemButton";
 import { useDrawer } from "../hooks/useDrawer";
+import React from "react";
 
-export default function ButtonAppBar() {
+const Navbar = React.memo(function Navbar() {
   const { isOpen, open, close, anchor } = useDrawer();
+
+  const handleDrawerClick = React.useCallback(() => {
+    close({}, "backdropClick");
+  }, [close]);
+
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        close({}, "escapeKeyDown");
+      }
+    },
+    [close]
+  );
 
   return (
     <>
@@ -38,8 +52,8 @@ export default function ButtonAppBar() {
         <Box
           sx={{ width: 250 }}
           role="presentation"
-          onClick={close}
-          onKeyDown={close}
+          onClick={handleDrawerClick}
+          onKeyDown={handleKeyDown}
         >
           <List>
             <ListItem>
@@ -57,4 +71,6 @@ export default function ButtonAppBar() {
       </Drawer>
     </>
   );
-}
+});
+
+export default Navbar;

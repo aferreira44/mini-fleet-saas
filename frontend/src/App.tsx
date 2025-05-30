@@ -2,8 +2,9 @@ import { HashRouter as Router, Routes, Route } from "react-router";
 import Navbar from "./components/Navbar";
 import VehiclesPage from "./pages/VehiclesPage";
 import MainPage from "./pages/MainPage";
+import React from "react";
 
-function App() {
+const App = React.memo(function App() {
   return (
     <Router>
       <Navbar />
@@ -13,6 +14,6 @@ function App() {
       </Routes>
     </Router>
   );
-}
+});
 
 export default App;

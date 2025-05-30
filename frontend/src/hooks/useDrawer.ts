@@ -10,16 +10,11 @@ export interface UseDrawerOptions {
 export function useDrawer(options: UseDrawerOptions = {}) {
     const { isVisible, show, hide, toggle } = useVisibility();
 
-    const handleClose = useCallback((event: React.KeyboardEvent | React.MouseEvent) => {
-        if (
-            event.type === 'keydown' &&
-            ((event as React.KeyboardEvent).key === 'Tab' ||
-                (event as React.KeyboardEvent).key === 'Shift')
-        ) {
-            return;
+    const handleClose = useCallback((_: {}, reason: "backdropClick" | "escapeKeyDown") => {
+        if (reason === "backdropClick" || reason === "escapeKeyDown") {
+            hide();
+            options.onClose?.();
         }
-        hide();
-        options.onClose?.();
     }, [hide, options.onClose]);
 
     const handleOpen = useCallback(() => {

@@ -43,10 +43,7 @@ type Order = "asc" | "desc";
 function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
+): (a: any, b: any) => number {
   return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
@@ -70,7 +67,9 @@ interface EnhancedTableHeadProps<T> {
   headCells: readonly HeadCell<T>[];
 }
 
-function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
+const EnhancedTableHead = React.memo(function EnhancedTableHead<
+  T extends { id: number }
+>(props: EnhancedTableHeadProps<T>) {
   const {
     onSelectAllClick,
     order,
@@ -80,10 +79,12 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
     onRequestSort,
     headCells,
   } = props;
-  const createSortHandler =
+  const createSortHandler = React.useCallback(
     (property: keyof T) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
-    };
+    },
+    [onRequestSort]
+  );
 
   return (
     <TableHead>
@@ -124,14 +125,16 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
       </TableRow>
     </TableHead>
   );
-}
+});
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
   title: string;
 }
 
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
+const EnhancedTableToolbar = React.memo(function EnhancedTableToolbar(
+  props: EnhancedTableToolbarProps
+) {
   const { numSelected, title } = props;
   return (
     <Toolbar
@@ -183,7 +186,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       )}
     </Toolbar>
   );
-}
+});
 
 export default function EnhancedTable<T extends { id: number }>({
   data,
@@ -198,62 +201,74 @@ export default function EnhancedTable<T extends { id: number }>({
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: keyof T
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
+  const handleRequestSort = React.useCallback(
+    (_: React.MouseEvent<unknown>, property: keyof T) => {
+      const isAsc = orderBy === property && order === "asc";
+      setOrder(isAsc ? "desc" : "asc");
+      setOrderBy(property);
+    },
+    [order, orderBy]
+  );
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = data.map((n) => n.id);
+  const handleSelectAllClick = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.checked) {
+        const newSelected = data.map((n) => n.id);
+        setSelected(newSelected);
+        return;
+      }
+      setSelected([]);
+    },
+    [data]
+  );
+
+  const handleClick = React.useCallback(
+    (_: React.MouseEvent<unknown>, id: number) => {
+      const selectedIndex = selected.indexOf(id);
+      let newSelected: readonly number[] = [];
+
+      if (selectedIndex === -1) {
+        newSelected = newSelected.concat(selected, id);
+      } else if (selectedIndex === 0) {
+        newSelected = newSelected.concat(selected.slice(1));
+      } else if (selectedIndex === selected.length - 1) {
+        newSelected = newSelected.concat(selected.slice(0, -1));
+      } else if (selectedIndex > 0) {
+        newSelected = newSelected.concat(
+          selected.slice(0, selectedIndex),
+          selected.slice(selectedIndex + 1)
+        );
+      }
       setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
-  };
+    },
+    [selected]
+  );
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
-
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = React.useCallback((_: unknown, newPage: number) => {
     setPage(newPage);
-  };
+  }, []);
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+  const handleChangeRowsPerPage = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      setPage(0);
+    },
+    []
+  );
 
-  const handleEdit = (id: number) => {
-    if (onEdit) {
-      onEdit(id);
-    }
-  };
+  const handleEdit = React.useCallback(
+    (id: number) => {
+      if (onEdit) {
+        onEdit(id);
+      }
+    },
+    [onEdit]
+  );
 
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
+  const emptyRows = React.useMemo(
+    () => (page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0),
+    [page, rowsPerPage, data.length]
+  );
 
   const visibleRows = React.useMemo(
     () =>

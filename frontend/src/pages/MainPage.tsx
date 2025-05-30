@@ -58,6 +58,15 @@ class MainPage extends React.Component<MainPageProps> {
     };
   }
 
+  shouldComponentUpdate(nextProps: MainPageProps) {
+    // Only update if vehicles data has changed
+    return (
+      this.props.vehiclesData.vehicles !== nextProps.vehiclesData.vehicles ||
+      this.props.vehiclesData.loading !== nextProps.vehiclesData.loading ||
+      this.props.vehiclesData.error !== nextProps.vehiclesData.error
+    );
+  }
+
   render() {
     const { loading, error } = this.props.vehiclesData;
     const stats = this.getVehicleStats();
