@@ -1,32 +1,35 @@
-import json
 from typing import List
-from connexion.exceptions import InternalServerError
-from .models import Vehicle, VehicleStatus
+from connexion.exceptions import InternalServerError, ClientProblem
+from .models import VehicleStatus
+from .database import get_db
+from .repositories import VehicleRepository
 
 
 def get_vehicles() -> List[dict]:
     try:
-        with open("./data/vehicles.json", "r") as f:
-            data = json.load(f)
-            vehicles = [Vehicle(**vehicle) for vehicle in data["vehicles"]]
-            return [vehicle.model_dump() for vehicle in vehicles]
-    except Exception:
-        raise InternalServerError("Error fetching vehicles")
+        db = next(get_db())
+        repository = VehicleRepository(db)
+        vehicles = repository.get_all()
+        return [vehicle.model_dump() for vehicle in vehicles]
+    except Exception as e:
+        raise InternalServerError(f"Error fetching vehicles: {str(e)}")
 
 
 def update_vehicle_status(vehicle_id: int, body: dict) -> dict:
     try:
-        with open("./data/vehicles.json", "r") as f:
-            data = json.load(f)
+        db = next(get_db())
+        repository = VehicleRepository(db)
 
-        vehicle_data = data["vehicles"][vehicle_id - 1]
-        vehicle_data["status"] = VehicleStatus(body["status"]).value
+        # Get vehicle
+        vehicle = repository.get_by_id(vehicle_id)
+        if not vehicle:
+            raise ClientProblem(404, f"Vehicle with id {vehicle_id} not found")
 
-        with open("./data/vehicles.json", "w") as f:
-            json.dump(data, f)
+        # Update status
+        updated_vehicle = repository.update_status(
+            vehicle_id, VehicleStatus(body["status"])
+        )
+        return updated_vehicle.model_dump()
 
-        vehicle = Vehicle(**vehicle_data)
-        return vehicle.model_dump()
-
-    except Exception:
-        raise InternalServerError("Error updating vehicle status")
+    except Exception as e:
+        raise InternalServerError(f"Error updating vehicle status: {str(e)}")

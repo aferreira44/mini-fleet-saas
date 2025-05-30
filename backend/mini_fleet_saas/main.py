@@ -1,6 +1,10 @@
 from connexion import AsyncApp
 from connexion.middleware import MiddlewarePosition
 from starlette.middleware.cors import CORSMiddleware
+from .database import init_db
+
+# Initialize the database
+init_db()
 
 app = AsyncApp(__name__)
 
