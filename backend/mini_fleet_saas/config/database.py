@@ -1,29 +1,23 @@
 import random
-from sqlalchemy import create_engine, Column, Integer, String, Enum
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pathlib import Path
-from .models import VehicleStatus
+from typing import Final
+from ..services.vehicles.models import Base, VehicleModel, VehicleStatus
 
-DB_PATH = Path("./data/fleet.db")
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+# Get the project root directory (2 levels up from this file)
+PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.parent
+
+# Database configuration
+DB_PATH: Final[Path] = PROJECT_ROOT / "fleet.db"
+DATABASE_URL: Final[str] = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-
-class VehicleModel(Base):
-    __tablename__ = "vehicles"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    status = Column(Enum(VehicleStatus), nullable=False)
 
 
 def init_db():
     """Initialize the database with the required schema."""
-    DB_PATH.parent.mkdir(exist_ok=True)
     Base.metadata.create_all(bind=engine)
 
 
@@ -67,5 +61,11 @@ def seed_db(num_vehicles: int = 50):
 
 def drop_db():
     """Drop the database."""
-    DB_PATH.unlink(missing_ok=True)
-    print("Database dropped successfully!")
+    try:
+        if DB_PATH.exists():
+            DB_PATH.unlink(missing_ok=False)
+            print("Database dropped successfully!")
+        else:
+            print("Database not found, skipping drop.")
+    except Exception as e:
+        print(f"Error dropping database: {e}")

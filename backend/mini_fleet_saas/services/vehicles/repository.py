@@ -1,7 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from .models import Vehicle, VehicleStatus
-from .database import VehicleModel
+from .models import VehicleModel, Vehicle, VehicleStatus
 
 
 class VehicleRepository:
@@ -11,27 +10,25 @@ class VehicleRepository:
     def get_all(self) -> List[Vehicle]:
         """Get all vehicles."""
         vehicles = self.db.query(VehicleModel).all()
-        return [
-            Vehicle(id=vehicle.id, name=vehicle.name, status=vehicle.status)
-            for vehicle in vehicles
-        ]
+        return [Vehicle.from_orm(vehicle) for vehicle in vehicles]
 
     def get_by_id(self, vehicle_id: int) -> Optional[Vehicle]:
         """Get a vehicle by ID."""
         vehicle = (
             self.db.query(VehicleModel).filter(VehicleModel.id == vehicle_id).first()
         )
-        if not vehicle:
-            return None
-        return Vehicle(id=vehicle.id, name=vehicle.name, status=vehicle.status)
+        return Vehicle.from_orm(vehicle) if vehicle else None
 
     def update_status(self, vehicle_id: int, status: VehicleStatus) -> Vehicle:
-        """Update a vehicle's status."""
+        """Update a vehicle."""
         vehicle = (
             self.db.query(VehicleModel).filter(VehicleModel.id == vehicle_id).first()
         )
         if not vehicle:
-            raise Exception(f"Vehicle with id {vehicle_id} not found2")
+            raise Exception(f"Vehicle with id {vehicle_id} not found")
+
         vehicle.status = status
+
         self.db.commit()
-        return Vehicle(id=vehicle.id, name=vehicle.name, status=vehicle.status)
+        self.db.refresh(vehicle)
+        return Vehicle.from_orm(vehicle)

@@ -1,7 +1,7 @@
 from connexion import AsyncApp
 from connexion.middleware import MiddlewarePosition
 from starlette.middleware.cors import CORSMiddleware
-from .database import init_db
+from .config.database import init_db
 
 # Initialize the database
 init_db()
@@ -17,4 +17,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_api("../openapi.yaml")
+app.add_api("./config/openapi.yaml")

@@ -5,7 +5,7 @@ info:
 paths:
   /api/vehicles:
     get:
-      operationId: mini_fleet_saas.operations.get_vehicles
+      operationId: mini_fleet_saas.services.vehicles.resolvers.get_vehicles
       summary: Get list of vehicles
       responses:
         "200":
@@ -18,7 +18,7 @@ paths:
                   $ref: "#/components/schemas/Vehicle"
   /api/vehicles/{vehicle_id}/status:
     put:
-      operationId: mini_fleet_saas.operations.update_vehicle_status
+      operationId: mini_fleet_saas.services.vehicles.resolvers.update_vehicle_status
       summary: Update vehicle status
       parameters:
         - name: vehicle_id
@@ -55,7 +55,7 @@ components:
         - status
       properties:
         id:
-          type: string
+          type: integer
         name:
           type: string
         status:

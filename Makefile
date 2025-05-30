@@ -10,16 +10,16 @@ start:
 # Database commands
 seed-db:
 	@echo "Initializing database..."
-	@cd backend && uv run python -c "from mini_fleet_saas.database import init_db; init_db()"
+	@cd backend && uv run python -c "from mini_fleet_saas.config.database import init_db; init_db()"
 	@echo "Seeding database..."
-	@cd backend && uv run python -c "from mini_fleet_saas.database import seed_db; seed_db($(or $(word 2,$(MAKECMDGOALS)),50))"
+	@cd backend && uv run python -c "from mini_fleet_saas.config.database import seed_db; seed_db($(or $(word 2,$(MAKECMDGOALS)),50))"
 
 %:
 	@:
 
 drop-db:
 	@echo "Dropping database..."
-	@cd backend && uv run python -c "from mini_fleet_saas.database import drop_db; drop_db()"
+	@cd backend && uv run python -c "from mini_fleet_saas.config.database import drop_db; drop_db()"
 
 # Backend commands
 backend-run:

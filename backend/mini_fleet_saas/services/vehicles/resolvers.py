@@ -1,8 +1,8 @@
 from typing import List
 from connexion.exceptions import InternalServerError, ClientProblem
-from .models import VehicleStatus
-from .database import get_db
-from .repositories import VehicleRepository
+from mini_fleet_saas.services.vehicles.models import VehicleStatus
+from mini_fleet_saas.config.database import get_db
+from mini_fleet_saas.services.vehicles.repository import VehicleRepository
 
 
 def get_vehicles() -> List[dict]:
