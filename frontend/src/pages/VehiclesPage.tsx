@@ -42,7 +42,7 @@ export default function VehiclesPage() {
   }, [error]);
 
   const handleEdit = (id: number) => {
-    const vehicle = vehicles.find((v) => v.id === id);
+    const vehicle = vehicles.find((v: Vehicle) => v.id === id);
     if (vehicle) {
       setSelectedVehicle(vehicle);
       open();
