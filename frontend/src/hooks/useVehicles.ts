@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import type { Vehicle } from '../types/Vehicle';
 import type { RootState } from '../store';
@@ -8,9 +8,13 @@ import { fetchVehicles, updateVehicleStatus } from '../store/slices/vehiclesSlic
 export const useVehicles = () => {
     const dispatch = useAppDispatch();
     const { items: vehicles, loading, error } = useSelector((state: RootState) => state.vehicles);
+    const hasFetched = useRef(false);
 
     useEffect(() => {
-        dispatch(fetchVehicles());
+        if (!hasFetched.current) {
+            dispatch(fetchVehicles());
+            hasFetched.current = true;
+        }
     }, [dispatch]);
 
     const updateStatus = useCallback(async (vehicle: Vehicle) => {
