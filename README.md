@@ -1,9 +1,10 @@
-# Mini Fleet Vehicle Status Updater
+# Mini Fleet SaaS
 
 This is a simple full-stack app to view and update vehicle statuses in a fleet. It's built with:
 
-- **Frontend:** React, Redux, Material UI, Axios, HashRouter
-- **Backend:** Python + Connexion (OpenAPI-based)
+- **Frontend:** Vite, React, Redux, Material UI, Axios, HashRouter
+- **Backend:** Python + Connexion (OpenAPI-based), SQLAlchemy, Pydantic
+- **Database:** SQLite (in-memory)
 
 ---
 
@@ -13,8 +14,24 @@ This is a simple full-stack app to view and update vehicle statuses in a fleet. 
 
 /
 ├── backend/ # Python API with Connexion and OpenAPI
-├── backend/openapi.yaml # API definition
+├── backend/mini_fleet_saas/ # Python API with Connexion and OpenAPI
+├── backend/mini_fleet_saas/config/ # Configuration files
+├── backend/mini_fleet_saas/services/ # Business logic
+├── backend/mini_fleet_saas/main.py # Main entry point
+
 ├── frontend/ # React app with Redux and Material UI
+├── frontend/src/ # React app with Redux and Material UI
+├── frontend/src/api/ # API calls
+├── frontend/src/components/ # React components
+├── frontend/src/hooks/ # React hooks
+├── frontend/src/pages/ # React pages
+├── frontend/src/store/ # Redux store
+├── frontend/src/types/ # Type definitions
+├── frontend/src/utils/ # Utility functions
+├── frontend/src/App.tsx # Main app component
+├── frontend/src/theme.ts # Theme configuration
+├── frontend/src/main.tsx # Main entry point
+
 ├── Makefile # Commands for local dev
 └── README.md
 
@@ -28,7 +45,7 @@ This is a simple full-stack app to view and update vehicle statuses in a fleet. 
 
 - Python 3.10+
 - `make` installed
-- `uv` for Python dependency management
+- `uv` for Python dependency management (https://docs.astral.sh/uv/getting-started/installation/)
 - `ruff` for Python linting and formatting
 
 ### Quickstart
@@ -36,6 +53,9 @@ This is a simple full-stack app to view and update vehicle statuses in a fleet. 
 ```bash
 # Install dependencies for both backend and frontend
 make setup
+
+# Seed the database
+make seed-db 500 # Seed the database with 500 vehicles
 
 # Start both backend and frontend servers
 make start
@@ -46,6 +66,12 @@ make start
 ```bash
 # Backend
 make backend-run    # Run the backend server with hot reload
+
+# Frontend
+make frontend-run  # Run the frontend server with hot reload
+
+# Drop the database
+make drop-db
 ```
 
 ---
@@ -55,12 +81,12 @@ make backend-run    # Run the backend server with hot reload
 - `GET /api/vehicles` — list all vehicles
 - `PUT /api/vehicles/{vehicle_id}/status` — update vehicle status
 
-All data is in-memory.
+All data is in-memory, persisted in a SQLite database.
 
 ## 📚 API Documentation
 
 The API documentation is automatically generated using Swagger UI through Connexion.
-The API specification is defined in `backend/openapi.yaml`.
+The API specification is defined in `backend/mini_fleet_saas/config/openapi.yaml`.
 
 You can access it at: `http://localhost:8000/ui`
 
@@ -83,10 +109,31 @@ You can access it at: `http://localhost:8000/ui`
 
 ---
 
+## 🤖 AI Usage Disclosure
+
+**Disclaimer:** While AI tools were used to assist in development, all code was thoroughly reviewed, modified, and enhanced to meet project requirements and best practices.
+
+The development process involved iterative collaboration with AI tools, making it challenging to document every specific interaction. However, the core architecture, design decisions, and project structure were developed through careful consideration of requirements and industry standards.
+
+This project was created with the help of AI, with the following tools:
+
+- **Cursor:**
+
+  - Code generation and review (e.g. Redux slice, React components, Connexion resolvers, etc.)
+  - Suggesting code improvements (e.g. React performance improvements, Custom hooks, Redux slice improvements, etc.)
+  - Generating the basic structure of the README.md file
+  - Helping with the Makefile commands
+  - Generating comments and docstrings
+
+---
+
 ## ✅ Tests (Not included)
 
 Not implemented due to time constraints. Ideal test targets:
 
-- Reducers and async actions in Redux
+- Reducers and async actions in Redux (via `React Testing Library`)
 - API endpoint integration tests (via `pytest`)
+- Business logic tests (via `pytest`)
+- Database tests (via `pytest`)
 - Component-level unit tests (via `React Testing Library`)
+- End-to-end tests (via `Cypress`)

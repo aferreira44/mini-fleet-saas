@@ -1,4 +1,4 @@
-.PHONY: setup start seed backend-run frontend-run
+.PHONY: setup start seed-db drop-db backend-run frontend-run
 
 setup:
 	cd backend && uv pip install .
