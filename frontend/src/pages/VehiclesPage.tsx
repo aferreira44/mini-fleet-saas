@@ -77,7 +77,7 @@ export default function VehiclesPage() {
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
-          Vehicles
+          Fleet
         </Typography>
         <EnhancedTable
           data={vehicles}
@@ -95,6 +95,7 @@ export default function VehiclesPage() {
           />
         )}
         <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
           open={showError}
           autoHideDuration={6000}
           onClose={handleCloseError}
