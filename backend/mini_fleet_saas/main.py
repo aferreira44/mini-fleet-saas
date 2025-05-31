@@ -4,16 +4,36 @@ This module initializes the Connexion application, sets up CORS middleware,
 and configures the OpenAPI specification.
 """
 
+import contextlib
 from connexion import AsyncApp
 from connexion.middleware import MiddlewarePosition
 from starlette.middleware.cors import CORSMiddleware
 from .config.database import init_db
+from .config.logging import setup_logging, logger
 
-# Initialize the database connection
-init_db()
 
-# Create the Connexion application
-app = AsyncApp(__name__)
+@contextlib.asynccontextmanager
+async def lifespan(app):
+    """Lifespan context manager for application startup and shutdown."""
+    try:
+        # Startup
+        logger.info("Starting up Mini Fleet SaaS application")
+
+        # Setup logging
+        setup_logging()
+        logger.info("Logging setup complete")
+
+        # Initialize the database connection
+        init_db()
+        logger.info("Database connection initialized")
+        yield
+    finally:
+        # Shutdown
+        logger.info("Shutting down Mini Fleet SaaS application")
+
+
+# Create the Connexion application with lifespan
+app = AsyncApp(__name__, lifespan=lifespan)
 
 # Configure CORS middleware to allow cross-origin requests
 app.add_middleware(

@@ -6,6 +6,7 @@ This module provides methods to interact with the vehicle data in the database.
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from .models import VehicleModel, Vehicle, VehicleStatus
+from ...config.logging import logger
 
 
 class VehicleRepository:
@@ -36,6 +37,7 @@ class VehicleRepository:
             List[Vehicle]: List of all vehicles in the database
         """
         vehicles = self.db.query(VehicleModel).all()
+        logger.info(f"Retrieved {len(vehicles)} vehicles from the database")
         return [Vehicle.from_orm(vehicle) for vehicle in vehicles]
 
     def get_by_id(self, vehicle_id: int) -> Optional[Vehicle]:
@@ -51,6 +53,10 @@ class VehicleRepository:
         vehicle = (
             self.db.query(VehicleModel).filter(VehicleModel.id == vehicle_id).first()
         )
+        if vehicle:
+            logger.info(f"Retrieved vehicle with id {vehicle_id} from the database")
+        else:
+            logger.error(f"Vehicle with id {vehicle_id} not found")
         return Vehicle.from_orm(vehicle) if vehicle else None
 
     def update_status(self, vehicle_id: int, status: VehicleStatus) -> Vehicle:
@@ -67,14 +73,19 @@ class VehicleRepository:
         Raises:
             Exception: If the vehicle is not found
         """
+        # Get the SQLAlchemy model instance
         vehicle = (
             self.db.query(VehicleModel).filter(VehicleModel.id == vehicle_id).first()
         )
+
         if not vehicle:
+            logger.error(f"Vehicle with id {vehicle_id} not found")
             raise Exception(f"Vehicle with id {vehicle_id} not found")
 
+        # Update the status
         vehicle.status = status
-
         self.db.commit()
         self.db.refresh(vehicle)
+
+        logger.info(f"Updated vehicle with id {vehicle_id} to status {status}")
         return Vehicle.from_orm(vehicle)
