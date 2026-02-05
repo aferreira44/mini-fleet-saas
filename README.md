@@ -1,5 +1,14 @@
 # Mini Fleet SaaS
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-19.1-61DAFB.svg?logo=react&logoColor=white)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Material-UI](https://img.shields.io/badge/Material--UI-5.15-007FFF.svg?logo=mui&logoColor=white)](https://mui.com/)
+[![Redux](https://img.shields.io/badge/Redux-2.8-764ABC.svg?logo=redux&logoColor=white)](https://redux.js.org/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00.svg)](https://www.sqlalchemy.org/)
+[![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+
 This is a simple full-stack app to view and update vehicle statuses in a fleet. It's built with:
 
 - **Frontend:** Vite, React, Redux, Material UI, Axios, HashRouter
